@@ -42,6 +42,16 @@ async function authRoutes(fastify, options) {
       reply.code(500).send({ error: err.message });
     }
   });
+  fastify.get('/validate', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+      return reply.send({ valid: true, user: request.user });
+    } catch (err) {
+      return reply.code(401).send({ valid: false, error: 'Invalid token' });
+    }
+  });
+  
+
 }
 
 module.exports = authRoutes;

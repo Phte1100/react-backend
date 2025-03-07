@@ -30,6 +30,7 @@ authMiddleware(fastify);
 fastify.register(require('./routes/authRoutes'));
 fastify.register(require('./routes/userRoutes'));
 fastify.register(require('./routes/bookRoutes'));
+fastify.register(require('./routes/reviewRoutes'));
 
 // Starta servern
 const start = async () => {
