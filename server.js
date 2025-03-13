@@ -2,9 +2,6 @@ const fastify = require('fastify')({ logger: true });
 const dotenv = require('dotenv');
 dotenv.config();
 
-console.log('JWT secret:', process.env.JWT_SECRET);
-console.log('Database URL:', process.env.DATABASE_URL);
-
 // Registrera CORS-plugin med den senaste versionens syntax
 fastify.register(require('@fastify/cors'), {
   origin: '*', // Tillåt alla domäner
