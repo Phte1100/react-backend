@@ -16,11 +16,6 @@ module.exports = {
       );
     },
   
-    // Gilla en recension
-    async likeReview(db, reviewId) {
-      await db.query(`UPDATE reviews SET likes = likes + 1 WHERE id = ?`, [reviewId]);
-    },
-  
     // Ta bort en recension
     async deleteReview(db, reviewId, userId) {
       const [result] = await db.query(`DELETE FROM reviews WHERE id = ? AND user_id = ?`, [reviewId, userId]);

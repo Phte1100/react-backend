@@ -13,56 +13,60 @@ async function userRoutes(fastify, options) {
     }
   });
 
-  // Uppdatera en användare
   fastify.put('/users/:id', async (request, reply) => {
     const { id } = request.params;
-    const { username, email, password } = request.body;
+    const { username, email, password, role } = request.body;
 
     try {
-      // Validera lösenordets längd om det finns
-      if (password && password.length < 6) {
-        return reply.code(400).send({ error: 'Password must be at least 6 characters long.' });
-      }
+        // Validera lösenordets längd om det finns
+        if (password && password.length < 6) {
+            return reply.code(400).send({ error: 'Password must be at least 6 characters long.' });
+        }
 
-      // Hasha lösenord om det finns
-      let hashedPassword;
-      if (password) {
-        hashedPassword = await bcrypt.hash(password, 10);
-      }
+        // Hasha lösenord om det finns
+        let hashedPassword;
+        if (password) {
+            hashedPassword = await bcrypt.hash(password, 10);
+        }
 
-      // Bygg uppdateringsfrågan dynamiskt
-      const fields = [];
-      const values = [];
+        // Bygg uppdateringsfrågan dynamiskt
+        const fields = [];
+        const values = [];
 
-      if (username) {
-        fields.push('username = ?');
-        values.push(username);
-      }
-      if (email) {
-        fields.push('email = ?');
-        values.push(email);
-      }
-      if (hashedPassword) {
-        fields.push('password_hash = ?');
-        values.push(hashedPassword);
-      }
+        if (username) {
+            fields.push('username = ?');
+            values.push(username);
+        }
+        if (email) {
+            fields.push('email = ?');
+            values.push(email);
+        }
+        if (hashedPassword) {
+            fields.push('password_hash = ?');
+            values.push(hashedPassword);
+        }
+        if (role) {  // Se till att rollen kan uppdateras
+            fields.push('role = ?');
+            values.push(role);
+        }
 
-      if (fields.length === 0) {
-        return reply.code(400).send({ error: 'No fields to update' });
-      }
+        if (fields.length === 0) {
+            return reply.code(400).send({ error: 'No fields to update' });
+        }
 
-      values.push(id);
+        values.push(id);
 
-      await fastify.mysql.query(
-        `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
-        values
-      );
+        await fastify.mysql.query(
+            `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
+            values
+        );
 
-      reply.send({ message: 'User updated successfully' });
+        reply.send({ message: 'User updated successfully' });
     } catch (err) {
-      reply.code(500).send({ error: err.message });
+        reply.code(500).send({ error: err.message });
     }
-  });
+});
+
 
   // Ta bort en användare
   fastify.delete('/users/:id', async (request, reply) => {

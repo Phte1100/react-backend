@@ -13,25 +13,6 @@ async function reviewRoutes(fastify, options) {
     }
   });
 
-  // Lägg till en recension
-  /*
-  fastify.post('/books/:isbn/reviews', async (request, reply) => {
-    const { isbn } = request.params;
-    const { user_id, rating, review_text } = request.body;
-
-    if (!user_id || !rating || rating < 1 || rating > 5 || !review_text) {
-      return reply.code(400).send({ error: 'user_id, rating (1-5), and review_text are required.' });
-    }
-
-    try {
-      await reviewModel.addReview(fastify.mysql, { user_id, book_isbn: isbn, rating, review_text });
-      reply.send({ message: 'Review added successfully' });
-    } catch (err) {
-      reply.code(500).send({ error: err.message });
-    }
-  });
-  */
-
 // Lägg till en recension
 fastify.post('/books/:isbn/reviews', async (request, reply) => {
   const { isbn } = request.params;
@@ -50,7 +31,7 @@ fastify.post('/books/:isbn/reviews', async (request, reply) => {
   }
 });
 
-fastify.delete('/reviews/:id', async (request, reply) => {
+fastify.delete('/reviews/:id', async (request, reply) => { // Ta bort en recension
   const { id } = request.params;
   const { user_id } = request.body;
 

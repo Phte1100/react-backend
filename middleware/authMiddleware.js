@@ -18,7 +18,7 @@ module.exports = async function authMiddleware(fastify) {
       }
   
       try {
-        await request.jwtVerify(); // ✅ Verifiera token
+        await request.jwtVerify(); //Verifiera token
         console.log("Token är giltig:", request.user);
       } catch (err) {
         console.error("Token ogiltig:", err.message);

@@ -2,9 +2,9 @@ const https = require('https');
 const bookModel = require('../models/bookModel'); // Importera modellen
 
 async function fetchBookData(isbn, apiKey) {
-  const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${apiKey}`;
+  const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${apiKey}`; // Google Books API URL
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => { // Skapa en Promise för att hantera asynkrona anrop
     https.get(url, (res) => {
       let data = '';
 
@@ -27,24 +27,16 @@ async function fetchBookData(isbn, apiKey) {
 }
 
 async function bookRoutes(fastify, options) {
-  // Hämta alla böcker (tillgängligt för alla)
-  /*fastify.get('/books', async (request, reply) => {
+
+  fastify.get('/books', async (request, reply) => { // Hämta alla böcker
     try {
-      const books = await bookModel.getAllBooks(fastify.mysql);
-      reply.send(books);
+        const userId = request.user?.id || null; 
+        const books = await bookModel.getAllBooks(fastify.mysql, userId);
+        reply.send(books);
     } catch (err) {
-      reply.code(500).send({ error: err.message });
+        reply.code(500).send({ error: err.message });
     }
-  });*/
-  fastify.get('/books', async (request, reply) => {
-    try {
-      const userId = request.user?.id || null; // Om användaren är inloggad, använd deras ID
-      const books = await bookModel.getAllBooks(fastify.mysql, userId);
-      reply.send(books);
-    } catch (err) {
-      reply.code(500).send({ error: err.message });
-    }
-  });
+});
 
   // Hämta en specifik bok via ISBN
   fastify.get('/books/:isbn', async (request, reply) => {
@@ -98,23 +90,6 @@ async function bookRoutes(fastify, options) {
     }
   });
 
-  // Gilla en bok
-  /*fastify.post('/books/:isbn/like', async (request, reply) => {
-    const { isbn } = request.params;
-
-    try {
-      const success = await bookModel.likeBook(fastify.mysql, isbn);
-
-      if (!success) {
-        return reply.code(404).send({ error: 'Book not found' });
-      }
-
-      reply.send({ message: 'Book liked!' });
-    } catch (err) {
-      reply.code(500).send({ error: err.message });
-    }
-  });*/
-
   // Gilla eller ta bort gilla
   fastify.post('/books/:isbn/like', async (request, reply) => {
     const { isbn } = request.params;
@@ -129,7 +104,7 @@ async function bookRoutes(fastify, options) {
   });
   
 
-  fastify.post('/books', async (request, reply) => {
+  fastify.post('/books', async (request, reply) => { // Lägg till en bok
     const { isbn, format } = request.body;
   
     if (!isbn || !format) {
@@ -146,9 +121,7 @@ async function bookRoutes(fastify, options) {
   
       const book = data.items[0].volumeInfo;
 
-      console.log("Google Books API response:", book);
-
-      const bookData = {
+      const bookData = { // Skapa bokdata att spara i databasen
         isbn,
         title: book.title,
         author: book.authors ? book.authors.join(', ') : 'Unknown',
@@ -160,8 +133,6 @@ async function bookRoutes(fastify, options) {
         genre: book.categories ? book.categories.join(', ') : 'Unknown',
         format
     };
-
-      console.log("Book data to save:", bookData);
   
       await bookModel.addBook(fastify.mysql, bookData);
       reply.send({ message: 'Book added successfully', book: bookData });

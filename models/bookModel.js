@@ -2,16 +2,47 @@ module.exports = {
   // Hämta ALLA böcker
   // Hämta alla böcker och inkludera om användaren har gillat dem
   async getAllBooks(db, userId) {
-    const [books] = await db.query(`SELECT * FROM books`);
+    const query = `
+    SELECT 
+        b.isbn, 
+        b.title, 
+        b.author, 
+        b.published_year AS publishedYear,
+        b.description, 
+        b.excerpt, 
+        b.thumbnail, 
+        b.genre, 
+        b.format, 
+        b.likes, 
+        IFNULL(AVG(r.rating), 0) AS averageRating
+    FROM books b
+    LEFT JOIN reviews r ON b.isbn = r.book_isbn
+    GROUP BY b.isbn
+`;
 
-    // För varje bok, kolla om användaren har gillat den
-    for (let book of books) {
-      const [likes] = await db.query(`SELECT 1 FROM likes WHERE user_id = ? AND book_isbn = ?`, [userId, book.isbn]);
-      book.userHasLiked = likes.length > 0; // true om gillad, annars false
+
+    const [books] = await db.query(query);
+
+    for (let book of books) { 
+        if (userId) { // Om användar-ID finns, kontrollera om användaren har gillat boken
+            const [likes] = await db.query(
+                `SELECT 1 FROM likes WHERE user_id = ? AND book_isbn = ?`, 
+                [userId, book.isbn]
+            );
+            book.userHasLiked = likes.length > 0; // Sätt till true om användaren har gillat boken
+        } else {
+            book.userHasLiked = false;
+        }
+
+        //Konvertera "published_year" till "publishedYear"
+        if (book.published_year !== undefined) {
+            book.publishedYear = book.published_year;
+            delete book.published_year; // Ta bort gamla nyckeln
+        }
     }
 
     return books;
-  },
+},
 
   // Kontrollera om användaren har gillat en bok
   async hasLikedBook(db, userId, isbn) {
