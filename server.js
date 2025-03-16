@@ -13,17 +13,26 @@ fastify.register(require('@fastify/jwt'), {
   secret: process.env.JWT_SECRET
 });
 
+// Definiera en `authenticate`-metod som kan användas i routes
+fastify.decorate("authenticate", async (request, reply) => {
+  try {
+    await request.jwtVerify();
+  } catch (err) {
+    reply.code(401).send({ error: "Unauthorized" });
+  }
+});
+
 // Registrera MySQL-plugin
 fastify.register(require('@fastify/mysql'), {
   promise: true,
   connectionString: process.env.DATABASE_URL
 });
 
-// Registrera middleware
+// Registrera middleware (om du behöver den)
 const authMiddleware = require('./middleware/authMiddleware');
 authMiddleware(fastify);
 
-// Registrera routes
+// Registrera routes **efter** att `authenticate` har definierats
 fastify.register(require('./routes/authRoutes'));
 fastify.register(require('./routes/userRoutes'));
 fastify.register(require('./routes/bookRoutes'));
